@@ -42,7 +42,11 @@ module TestIds
         lines.shift while lines.first =~ /^\/\// && !lines.empty?
         s = JSON.load(lines.join("\n"))
         rangehash = s['pointers']['ranges']
-        rangehash = Hash[rangehash.map { |k, v| [k.to_sym, v] }]
+        if rangehash.nil?
+          rangehash = store['pointers']['ranges'] ||= {}
+        else
+          rangehash = Hash[rangehash.map { |k, v| [k.to_sym, v] }]
+        end
       else
         # Create an alias for the databse that stores the pointers per range
         rangehash = store['pointers']['ranges'] ||= {}
