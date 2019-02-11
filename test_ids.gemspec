@@ -27,5 +27,4 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "origen", ">= 0.7.40"
   spec.add_runtime_dependency "origen_testers"
   spec.add_runtime_dependency "git"
-  spec.add_runtime_dependency 'nokogiri', '>= 1.7.2'
 end
