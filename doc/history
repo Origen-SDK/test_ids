@@ -1,3 +1,14 @@
+<a class="anchor release_tag" name="v1_1_0"></a>
+<h1><a href="#v1_1_0">Tag: v1.1.0</a></h1>
+
+##### Branch: 'master'
+
+##### by Stephen McGinty on 11-Feb-2019 15:32PM
+
+
+Added compatibility with program generator targets that support sub-flows, such as SMT8.
+No changes to the user facing API.
+
 <a class="anchor release_tag" name="v1_0_0"></a>
 <h1><a href="#v1_0_0">Tag: v1.0.0</a></h1>
 

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    test_ids (1.0.0)
+    test_ids (1.1.0)
       git
       origen (>= 0.7.40)
       origen_testers
@@ -47,7 +47,7 @@ GEM
       nesty
       sinatra (>= 1.2.7)
     gems (0.8.3)
-    git (1.4.0)
+    git (1.5.0)
     highline (1.7.10)
     httparty (0.16.2)
       multi_xml (>= 0.5.2)
@@ -168,4 +168,4 @@ DEPENDENCIES
   test_ids!
 
 BUNDLED WITH
-   1.16.1
+   1.17.1
