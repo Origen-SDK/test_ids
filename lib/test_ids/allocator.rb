@@ -33,24 +33,15 @@ module TestIds
     end
 
     def range_item(range, options)
-      orig_options = options.dup
-      # Now Check if the database (JSON file) exists.
-      # If file exists, load the database and create the alias for ['pointer']['ranges']
-      if file && File.exist?(file)
-        lines = File.readlines(file)
-        # Remove any header comment lines since these are not valid JSON
-        lines.shift while lines.first =~ /^\/\// && !lines.empty?
-        s = JSON.load(lines.join("\n"))
-        rangehash = s['pointers']['ranges']
-        if rangehash.nil?
-          rangehash = store['pointers']['ranges'] ||= {}
-        else
-          rangehash = Hash[rangehash.map { |k, v| [k.to_sym, v] }]
-        end
+      # This is the actual fix, it should now not be dependent on the json file being read in, instead the store pointers
+      # will be utilized to get the correct number assigned from the range.
+      if store['pointers']['ranges'].nil?
+        rangehash = {}
       else
-        # Create an alias for the databse that stores the pointers per range
-        rangehash = store['pointers']['ranges'] ||= {}
+        rangehash = store['pointers']['ranges']
+        rangehash = Hash[rangehash.map { |k, v| [k.to_sym, v] }]
       end
+      orig_options = options.dup
       # Check the database to see if the passed in range has already been included in the database hash
       if rangehash.key?(:"#{range}")
         # Read out the database hash to see what the last_softbin given out was for that range.
@@ -85,6 +76,7 @@ module TestIds
         Origen.log.error 'Assigned value not in range'
         fail
       end
+      store['pointers']['ranges'] = rangehash
       assigned_value
     end
 
