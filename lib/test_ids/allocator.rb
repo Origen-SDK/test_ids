@@ -56,9 +56,6 @@ module TestIds
         if previous_assigned_value == range.to_a[@pointer]
           @pointer += options[:size]
           assigned_value = range.to_a[@pointer]
-          # Since the assigned value for this test has now changed, update store to contain the newly assigned value
-          # so that when the json file is written, it contains the latest assigned value name.
-          store['pointers']['ranges'] = rangehash
         else
           # Because of the pointer calculations above, I don't think it will ever reach here, has not in my test cases so far!
           assigned_value = range.to_a[@pointer]
@@ -76,6 +73,8 @@ module TestIds
         Origen.log.error 'Assigned value not in range'
         fail
       end
+      # Since the assigned value for this test has now changed, update store to contain the newly assigned value
+      # so that when the json file is written, it contains the latest assigned value name.
       store['pointers']['ranges'] = rangehash
       assigned_value
     end
