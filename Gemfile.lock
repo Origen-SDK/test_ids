@@ -162,7 +162,7 @@ GEM
     tins (1.20.2)
     tzinfo (1.2.5)
       thread_safe (~> 0.1)
-    yard (0.9.18)
+    yard (0.9.25)
 
 PLATFORMS
   ruby
