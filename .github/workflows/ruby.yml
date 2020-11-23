@@ -31,7 +31,9 @@ jobs:
       run: echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
     - name: Install dependencies
       run: bundle install
+    - name: Gem Install Origen 
+      run: gem install origen 
     - name: Setup Dependencies
-      run: bundle exec origen -v
+      run: origen -v
     - name: Run tests
-      run: bundle exec origen specs
+      run: origen specs
