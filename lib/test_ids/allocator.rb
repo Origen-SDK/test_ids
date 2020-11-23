@@ -28,11 +28,26 @@ module TestIds
     # If a numeric number is passed to the softbin, it uses that number.
     # The configuration for the TestId plugin needs to pass in the bin number and the options from the test flow
     # For this method to work as intended.
-    def next_in_range(range, options)
-      range_item(range, options)
+    # This will handle the following range inputs:
+    #   - Range, Ex: 0..10
+    #   - Array, Ex: [0..10, 20..30]
+    def next_in_range(range_definition, options)
+      if range_definition.is_a?(Range)
+        range = range_definition.to_a
+      elsif range_definition.is_a?(Array)
+        range = []
+        range_definition.each do |range_element|
+          range += range_element.is_a?(Integer) ? [range_element] : range_element.step(options[:size]).to_a
+        end
+        if range.uniq.size != range.size
+          Origen.log.error "Duplicate or overlapping range has been detected in configuration: \'#{TestIds.current_configuration.id}\'."
+          fail
+        end
+      end
+      range_item(range, range_definition, options)
     end
 
-    def range_item(range, options)
+    def range_item(range, range_definition, options)
       # This is the actual fix, it should now not be dependent on the json file being read in, instead the store pointers
       # will be utilized to get the correct number assigned from the range.
       if store['pointers']['ranges'].nil?
@@ -43,33 +58,33 @@ module TestIds
       end
       orig_options = options.dup
       # Check the database to see if the passed in range has already been included in the database hash
-      if rangehash.key?(:"#{range}")
+      if rangehash.key?(:"#{range_definition}")
         # Read out the database hash to see what the last_softbin given out was for that range.
         # This hash is updated whenever a new softbin is assigned, so it should have the updated values for each range.
-        previous_assigned_value = rangehash[:"#{range}"].to_i
+        previous_assigned_value = rangehash[:"#{range_definition}"].to_i
         # Now calculate the new pointer.
-        @pointer = previous_assigned_value - range.min
+        @pointer = range.index(previous_assigned_value) + 1
         # Check if the last_softbin given out is the same as the range[@pointer],
         # if so increment pointer by softbin size, default size is 1, config.softbins.size is configurable.
         # from example above, pointer was calculated as 1,range[1] is 10101 and is same as last_softbin, so pointer is incremented
         # and new value is assigned to the softbin.
-        if previous_assigned_value == range.to_a[@pointer]
+        if previous_assigned_value == range[@pointer]
           @pointer += options[:size]
-          assigned_value = range.to_a[@pointer]
+          assigned_value = range[@pointer]
         else
           # Because of the pointer calculations above, I don't think it will ever reach here, has not in my test cases so far!
-          assigned_value = range.to_a[@pointer]
+          assigned_value = range[@pointer]
         end
         # Now update the database pointers to point to the lastest assigned softbin for a given range.
-        rangehash.merge!(:"#{range}" => "#{range.to_a[@pointer]}")
+        rangehash.merge!(:"#{range_definition}" => "#{range[@pointer]}")
       else
         # This is the case for a brand new range that has not been passed before
         # We start from the first value as the assigned softbin and update the database to reflect.
         @pointer = 0
-        rangehash.merge!(:"#{range}" => "#{range.to_a[@pointer]}")
-        assigned_value = range.to_a[@pointer]
+        rangehash.merge!(:"#{range_definition}" => "#{range[@pointer]}")
+        assigned_value = range[@pointer]
       end
-      unless !assigned_value.nil? && assigned_value.between?(range.min, range.max)
+      unless !assigned_value.nil? && range.include?(assigned_value)
         Origen.log.error 'Assigned value not in range'
         fail
       end
