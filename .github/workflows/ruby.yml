@@ -7,15 +7,14 @@
 
 name: Ruby
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on:[push, pull_request]
 
 jobs:
   test:
 
+    strategy:
+      matrix:
+        ruby: [2.6, 2.5]
     runs-on: ubuntu-latest
 
     steps:
@@ -26,20 +25,7 @@ jobs:
     # uses: ruby/setup-ruby@v1
       uses: actions/setup-ruby@v1
       with:
-        ruby-version: 2.6
-    - name: Update Env
-      run: echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
-    - name: Install dependencies
-      run: bundle install
-    - name: Gem Install Origen 
-      run: gem install origen 
-    - name: Setup Dependencies
-      run: origen -v
-    - name: Run tests
-      run: origen specs
-      uses: actions/setup-ruby@v1
-      with:
-        ruby-version: 2.5
+        ruby-version: ${{ matrix.ruby }}
     - name: Update Env
       run: echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
     - name: Install dependencies
