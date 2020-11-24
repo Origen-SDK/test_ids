@@ -172,7 +172,7 @@ PLATFORMS
 DEPENDENCIES
   byebug (~> 8)
   coveralls
-  nokogiri (= 1.7.2)
+  nokogiri (= 1.10.10)
   origen_doc_helpers
   ripper-tags
   test_ids!
