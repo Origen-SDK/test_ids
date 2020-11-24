@@ -1,38 +1,27 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will download a prebuilt Ruby version, install dependencies and run tests with Rake
-# For more information see: https://github.com/marketplace/actions/setup-ruby-jruby-and-truffleruby
+name: Test IDs Regression Tests
 
-name: Ruby
-
-on: [push, pull_request]
+on: [push]
 
 jobs:
-  test:
-
+  build:
     strategy:
       matrix:
-        ruby: [2.6, 2.5]
-    runs-on: ubuntu-latest
-
+        os: [ubuntu-latest, windows-latest]
+        ruby-version: [2.5, 2.6]
+    
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby
-    # To automatically get bug fixes and new Ruby versions for ruby/setup-ruby,
-    # change this to (see https://github.com/ruby/setup-ruby#versioning):
-    # uses: ruby/setup-ruby@v1
       uses: actions/setup-ruby@v1
       with:
-        ruby-version: ${{ matrix.ruby }}
+        ruby-version: ${{ matrix.ruby-version }}
     - name: Update Env
       run: echo "ACTIONS_ALLOW_UNSECURE_COMMANDS=true" >> $GITHUB_ENV
+    - name: Install Bundler
+      run: gem install bundler:1.17.2
     - name: Install dependencies
-      run: |
-           gem install bundler --no-document
-           bundle update --bundler
-           bundle install
+      run: bundle install  
     - name: Gem Install Origen 
       run: gem install origen 
     - name: Setup Dependencies
