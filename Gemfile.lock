@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    test_ids (1.1.2)
+    test_ids (1.2.0)
       git
       origen (>= 0.57.0)
       origen_testers

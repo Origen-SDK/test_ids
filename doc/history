@@ -1,3 +1,14 @@
+<a class="anchor release_tag" name="v1_2_0"></a>
+<h1><a href="#v1_2_0">Tag: v1.2.0</a></h1>
+
+##### Branch: 'master'
+
+##### by Priyavadan Kumar on 24-Nov-2020 11:53AM
+
+
+* Added support for multiple ranges [Issue #24](https://github.com/Origen-SDK/test_ids/issues/24) - @JamesCreamer
+* Enabled Github Actions for Windows/Linux and Ruby 2.5/2.6
+
 <a class="anchor release_tag" name="v1_1_2"></a>
 <h1><a href="#v1_1_2">Tag: v1.1.2</a></h1>
 
