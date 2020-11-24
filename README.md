@@ -282,6 +282,29 @@ COMPLETE CALL STACK
 ...
 ~~~
 
+## Next In Range with Multiple Ranges (Beta Feature)
+
+This feature enables user-specified array of ranges or integers to be used within callback functions and TestIds will keep track of
+how many numbers in the range have been consumed so far.
+
+This is best shown by example:
+
+~~~ruby
+TestIds.configure :wafer_test do |config|
+  config.bins.include << (1..5)
+  config.softbins.size = 5
+  config.softbins needs: :bin do |options|
+    if options[:bin] == 1
+      TestIds.next_in_range([(1000..2000),(3000..4000),5000])
+    else
+      TestIds.next_in_range([(10000..20000), (30000..99999)], size: 5)   # Increment by 5 instead of the default of 1
+    end
+  end
+end
+~~~
+
+<mark><b>The order of the elements in the array will determine the order of the softbin assignements.</b></mark>
+<mark><b>This feature does not support ranges with overlapping values. An error will occur.</b></mark>
 
 ## Storage
 

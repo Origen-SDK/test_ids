@@ -104,4 +104,82 @@ describe "Specific Ranges for Bin, Softbin and Numbers" do
    end
  end
 
+ it 'Multiple Softbin Ranges can be used to assign softbins' do
+    TestIds.configure do |config|
+      config.softbins do |options|
+        TestIds.next_in_range(options[:softbin_range], options)
+      end 
+
+      config.numbers = :sx
+
+      a(:t1, bin: 10, softbin_range: [(1..2),(4..5)])[:softbin].should == 1
+      a(:t2, bin: 20, softbin_range: [(1..2),(4..5)])[:softbin].should == 2
+      a(:t4, bin: 40, softbin_range: [(1..2),(4..5)])[:softbin].should == 4
+      a(:t5, bin: 50, softbin_range: [(1..2),(4..5)])[:softbin].should == 5
+    end
+ end
+
+ it 'Multiple Softbin Ranges with a mix of Range and Integer can be used to assign softbins' do
+    TestIds.configure do |config|
+      config.softbins do |options|
+        TestIds.next_in_range(options[:softbin_range], options)
+      end 
+
+      config.numbers = :sx
+
+      a(:t1, bin: 10, softbin_range: [(1..2),3,(4..5)])[:softbin].should == 1
+      a(:t2, bin: 20, softbin_range: [(1..2),3,(4..5)])[:softbin].should == 2
+      a(:t3, bin: 30, softbin_range: [(1..2),3,(4..5)])[:softbin].should == 3
+      a(:t4, bin: 40, softbin_range: [(1..2),3,(4..5)])[:softbin].should == 4
+      a(:t5, bin: 50, softbin_range: [(1..2),3,(4..5)])[:softbin].should == 5
+    end
+ end
+
+ it 'Multiple Softbin Ranges with size declaration can be used to assign softbins' do
+    TestIds.configure do |config|
+      config.softbins do |options|
+        TestIds.next_in_range(options[:softbin_range], size: 5)
+      end 
+      config.numbers = :ssxxx
+
+      a(:t1, bin: 10, softbin_range: [(10..19),31,(41..51)])[:softbin].should == 10
+      a(:t2, bin: 20, softbin_range: [(10..19),31,(41..51)])[:softbin].should == 15
+      a(:t3, bin: 30, softbin_range: [(10..19),31,(41..51)])[:softbin].should == 31
+      a(:t4, bin: 40, softbin_range: [(10..19),31,(41..51)])[:softbin].should == 41
+      a(:t5, bin: 50, softbin_range: [(10..19),31,(41..51)])[:softbin].should == 46
+    end
+ end
+
+ it 'Multiple Softbin Ranges with overlapping ranges will raise an ERROR' do
+    TestIds.configure :my_config_name do |config|
+      config.softbins do |options|
+        TestIds.next_in_range(options[:softbin_range], options)
+      end 
+      config.numbers = :sx
+
+      expect {
+        a(:t1, bin: 10, softbin_range: [(1..3),(2..5)])[:softbin].should == 1
+        a(:t2, bin: 20, softbin_range: [(1..3),(2..5)])[:softbin].should == 2
+        a(:t3, bin: 30, softbin_range: [(1..3),(2..5)])[:softbin].should == 3
+        a(:t4, bin: 40, softbin_range: [(1..3),(2..5)])[:softbin].should == 4
+      }.to raise_error
+    end
+ end
+
+ it 'Duplicate Softbin Ranges have been detected' do
+    TestIds.configure do |config|
+      config.softbins do |options|
+        if options[:softbin_range].is_a?(Range)
+          TestIds.next_in_range(options[:softbin_range], options)
+        end
+      end 
+
+      config.numbers = :sx
+
+      expect {
+        a(:t1, bin: 10, softbin_range: [(1..2),(3..4),(3..4)])[:softbin].should == 1
+      }.to raise_error
+    end
+ end
+
 end
