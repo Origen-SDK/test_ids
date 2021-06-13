@@ -18,6 +18,7 @@ Examples: origen test_ids:clear --bins                      # Clear the bins in 
   opts.on('--bins', 'Clear the bin database') {  options[:bins] = true }
   opts.on('--softbins', 'Clear the softbin database') {  options[:softbins] = true }
   opts.on('--numbers', 'Clear the test number database') {  options[:numbers] = true }
+  opts.on('--ranges', 'Clear the ranges database') {  options[:ranges] = true }
   # opts.on('-pl', '--plugin PLUGIN_NAME', String, 'Set current plugin') { |pl_n|  options[:current_plugin] = pl_n }
   opts.on('-d', '--debugger', 'Enable the debugger') {  options[:debugger] = true }
   app_options.each do |app_option|
@@ -38,6 +39,11 @@ begin
   # Get the commit before the lock to give the user later
   rollback_id = git.repo.object('HEAD^').sha[0, 11]
   a = TestIds.load_allocator(ARGV.first)
+  if a.nil?
+    Origen.log.error "No configuration file could be found for file ID: '#{ARGV.first}'!"
+    Origen.log.warn 'By default, the correct ID to pass in will need to match the filename in the form: store_<file id>.json'
+    fail
+  end
   a.clear(options)
   a.save
 ensure
