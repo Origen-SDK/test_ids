@@ -296,7 +296,7 @@ module TestIds
       end
     end
 
-    # Clear the :bins, :softbins and/or :numbers by setting the options for each item to true
+    # Clear the :bins, :softbins and/or :numbers and/or :ranges by setting the options for each item
     def clear(options)
       if options[:softbin] || options[:softbins]
         store['assigned']['softbins'] = {}
@@ -315,6 +315,9 @@ module TestIds
         store['manually_assigned']['numbers'] = {}
         store['pointers']['numbers'] = nil
         store['references']['numbers'] = {}
+      end
+      if options[:range] || options[:ranges]
+        store['pointers']['ranges'] = nil
       end
     end
 
