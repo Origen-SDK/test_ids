@@ -257,6 +257,24 @@ module TestIds
     #  @reallocate_non_compliant = val
     # end
 
+    # Reset everything related to the TestIds module
+    # only needed for cases where running several targets
+    # back to back, e.g. for regression testing
+    def reset_everything(are_you_sure: false)
+      if are_you_sure
+        @repo = nil   # accessor
+        @git = nil   # accessor
+        @git_database_dir = nil
+        @git_initialized = nil
+        @configuration = nil
+        @configuration_id = nil
+        @bin_config = nil
+        @softbin_config = nil
+        @number_config = nil
+        @publish = nil
+      end
+    end
+
     private
 
     def on_origen_shutdown
