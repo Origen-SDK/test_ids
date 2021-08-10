@@ -1,3 +1,13 @@
+<a class="anchor release_tag" name="v1_2_2"></a>
+<h1><a href="#v1_2_2">Tag: v1.2.2</a></h1>
+
+##### Branch: 'master'
+
+##### by Daniel Hadad on 10-Aug-2021 11:15AM
+
+
+Added method to permit complete reset of TestIds data for test purposes only.
+
 <a class="anchor release_tag" name="v1_2_1"></a>
 <h1><a href="#v1_2_1">Tag: v1.2.1</a></h1>
 
