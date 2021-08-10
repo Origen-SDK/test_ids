@@ -3,6 +3,7 @@ PATH
   specs:
     test_ids (1.2.1)
       dentaku (~> 3)
+      dry-inflector (= 0.2.0)
       git
       origen (>= 0.57.0)
       origen_testers
@@ -42,7 +43,7 @@ GEM
     docile (1.4.0)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
-    dry-inflector (0.2.1)
+    dry-inflector (0.2.0)
     gems (0.8.3)
     git (1.9.1)
       rchardet (~> 1.8)
