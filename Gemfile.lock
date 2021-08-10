@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     test_ids (1.2.1)
+      dentaku (~> 3)
       git
       origen (>= 0.57.0)
       origen_testers

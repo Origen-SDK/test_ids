@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
 
   # Add any gems that your plugin needs to run within a host application
   spec.add_runtime_dependency "origen", ">= 0.57.0"
+  spec.add_runtime_dependency 'dentaku', '~>3'  # to support ruby 2.7. if origen requirement ever goes to >= 0.60.1 then you can remove this one
   spec.add_runtime_dependency "origen_testers"
   spec.add_runtime_dependency "git"
 end
