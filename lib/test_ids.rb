@@ -206,6 +206,17 @@ module TestIds
       @git
     end
 
+    def multi_module=(val)
+      unless [true, false].include?(val)
+        fail 'TestIds.multi_module must be set to either true or false'
+      end
+      @multi_module = val ? true : false
+    end
+
+    def multi_module?
+      @multi_module ? @multi_module == true : false
+    end
+
     def repo=(val)
       return if @repo && @repo == val
       if @repo && @repo != val
@@ -283,7 +294,10 @@ module TestIds
           @configuration.each do |id, config|
             config.allocator.save
           end
-          git.publish if publish?
+          debugger
+          Origen.log.warning publish?
+          Origen.log.warning !multi_module?
+          git.publish if publish? && !multi_module?
         end
       end
     end

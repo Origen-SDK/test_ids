@@ -50,26 +50,28 @@ module TestIds
     end
 
     def initialize(options)
-      unless File.exist?("#{options[:local]}/.git")
-        FileUtils.rm_rf(options[:local]) if File.exist?(options[:local])
-        FileUtils.mkdir_p(options[:local])
-        Dir.chdir options[:local] do
-          `git clone #{options[:remote]} .`
-          unless File.exist?('lock.json')
-            # Should really try to use the Git driver for this
-            exec 'touch lock.json'
-            exec 'git add lock.json'
-            exec 'git commit -m "Initial commit"'
-            exec 'git push'
+      unless Origen.running_remotely? && TestIds.multi_module?
+        unless File.exist?("#{options[:local]}/.git")
+          FileUtils.rm_rf(options[:local]) if File.exist?(options[:local])
+          FileUtils.mkdir_p(options[:local])
+          Dir.chdir options[:local] do
+            `git clone #{options[:remote]} .`
+            unless File.exist?('lock.json')
+              # Should really try to use the Git driver for this
+              exec 'touch lock.json'
+              exec 'git add lock.json'
+              exec 'git commit -m "Initial commit"'
+              exec 'git push'
+            end
           end
         end
+        @local = options[:local]
+        @repo = ::Git.open(options[:local])
+        # Get rid of any local edits coming in here, this is only called once at the start
+        # of the program generation run.
+        # No need to pull latest as that will be done when we obtain a lock.
+        @repo.reset_hard
       end
-      @local = options[:local]
-      @repo = ::Git.open(options[:local])
-      # Get rid of any local edits coming in here, this is only called once at the start
-      # of the program generation run.
-      # No need to pull latest as that will be done when we obtain a lock.
-      @repo.reset_hard
     end
 
     # Roll the repo back to the given commit ID
