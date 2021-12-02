@@ -294,7 +294,7 @@ module TestIds
           @configuration.each do |id, config|
             config.allocator.save
           end
-          git.publish if publish? 
+          git.publish if publish?
         end
       end
     end

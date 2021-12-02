@@ -50,7 +50,7 @@ module TestIds
     end
 
     def initialize(options)
-      unless Origen.running_remotely? && TestIds.multi_module?
+      if !Origen.running_locally? && !TestIds.multi_module?
         unless File.exist?("#{options[:local]}/.git")
           FileUtils.rm_rf(options[:local]) if File.exist?(options[:local])
           FileUtils.mkdir_p(options[:local])
