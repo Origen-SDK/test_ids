@@ -294,10 +294,7 @@ module TestIds
           @configuration.each do |id, config|
             config.allocator.save
           end
-          debugger
-          Origen.log.warning publish?
-          Origen.log.warning !multi_module?
-          git.publish if publish? && !multi_module?
+          git.publish if publish? 
         end
       end
     end
