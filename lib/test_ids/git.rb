@@ -50,26 +50,28 @@ module TestIds
     end
 
     def initialize(options)
-      unless File.exist?("#{options[:local]}/.git")
-        FileUtils.rm_rf(options[:local]) if File.exist?(options[:local])
-        FileUtils.mkdir_p(options[:local])
-        Dir.chdir options[:local] do
-          `git clone #{options[:remote]} .`
-          unless File.exist?('lock.json')
-            # Should really try to use the Git driver for this
-            exec 'touch lock.json'
-            exec 'git add lock.json'
-            exec 'git commit -m "Initial commit"'
-            exec 'git push'
+      if !(TestIds.lsf_manual_init_shutdown) && Origen.running_locally?
+        unless File.exist?("#{options[:local]}/.git")
+          FileUtils.rm_rf(options[:local]) if File.exist?(options[:local])
+          FileUtils.mkdir_p(options[:local])
+          Dir.chdir options[:local] do
+            `git clone #{options[:remote]} .`
+            unless File.exist?('lock.json')
+              # Should really try to use the Git driver for this
+              exec 'touch lock.json'
+              exec 'git add lock.json'
+              exec 'git commit -m "Initial commit"'
+              exec 'git push'
+            end
           end
         end
+        @local = options[:local]
+        @repo = ::Git.open(options[:local])
+        # Get rid of any local edits coming in here, this is only called once at the start
+        # of the program generation run.
+        # No need to pull latest as that will be done when we obtain a lock.
+        @repo.reset_hard
       end
-      @local = options[:local]
-      @repo = ::Git.open(options[:local])
-      # Get rid of any local edits coming in here, this is only called once at the start
-      # of the program generation run.
-      # No need to pull latest as that will be done when we obtain a lock.
-      @repo.reset_hard
     end
 
     # Roll the repo back to the given commit ID
@@ -108,11 +110,13 @@ module TestIds
     end
 
     def publish
-      Origen.profile 'Publishing the test IDs store' do
-        release_lock
-        repo.add  # Checkin everything
-        repo.commit('Publishing latest store')
-        repo.push('origin', 'master', force: true)
+      if !(TestIds.lsf_manual_init_shutdown) && Origen.running_locally?
+        Origen.profile 'Publishing the test IDs store' do
+          release_lock
+          repo.add  # Checkin everything
+          repo.commit('Publishing latest store')
+          repo.push('origin', 'master', force: true)
+        end
       end
     end
 
@@ -124,23 +128,25 @@ module TestIds
     end
 
     def get_lock
-      return if @lock_open
-      Origen.profile 'Obtaining test IDs lock' do
-        until available_to_lock?
-          puts
-          puts "Waiting for lock, currently locked by #{lock_user} (the lock will expire in less than #{lock_minutes_remaining} #{'minute'.pluralize(lock_minutes_remaining)} if not released before that)"
-          puts
-          sleep 5
+      if !(TestIds.lsf_manual_init_shutdown) && Origen.running_locally?
+        return if @lock_open
+        Origen.profile 'Obtaining test IDs lock' do
+          until available_to_lock?(@repo)
+            puts
+            puts "Waiting for lock, currently locked by #{lock_user} (the lock will expire in less than #{lock_minutes_remaining} #{'minute'.pluralize(lock_minutes_remaining)} if not released before that)"
+            puts
+            sleep 5
+          end
+          data = {
+            'user'    => User.current.name,
+            'expires' => (Time.now + minutes(5)).to_f
+          }
+          write('lock.json', JSON.pretty_generate(data))
+          repo.commit('Obtaining lock')
+          repo.push('origin')
         end
-        data = {
-          'user'    => User.current.name,
-          'expires' => (Time.now + minutes(5)).to_f
-        }
-        write('lock.json', JSON.pretty_generate(data))
-        repo.commit('Obtaining lock')
-        repo.push('origin')
+        @lock_open = true
       end
-      @lock_open = true
     end
 
     def release_lock
@@ -151,11 +157,11 @@ module TestIds
       write('lock.json', JSON.pretty_generate(data))
     end
 
-    def available_to_lock?
+    def available_to_lock?(repo_to_use)
       result = false
       Origen.profile 'Checking for lock' do
-        repo.fetch
-        repo.reset_hard('origin/master')
+        repo_to_use.fetch
+        repo_to_use.reset_hard('origin/master')
         if lock_content && lock_user && lock_user != User.current.name
           result = Time.now.to_f > lock_expires
         else

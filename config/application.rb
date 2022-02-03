@@ -83,7 +83,7 @@ class TestIdsApplication < Origen::Application
       puts "All tests passing, proceeding with release process!"
     end
   end
-
+  
   # To enabled source-less pattern generation create a class (for example PatternDispatcher)
   # to generate the pattern. This should return false if the requested pattern has been
   # dispatched, otherwise Origen will proceed with looking up a pattern source as normal.
