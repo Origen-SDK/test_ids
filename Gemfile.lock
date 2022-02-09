@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    test_ids (1.2.2)
+    test_ids (1.2.3)
       dentaku (~> 3)
       dry-inflector (= 0.2.0)
       git

@@ -1,3 +1,32 @@
+<a class="anchor release_tag" name="v1_2_3"></a>
+<h1><a href="#v1_2_3">Tag: v1.2.3</a></h1>
+
+##### Branch: 'master'
+
+##### by Priyavadan Kumar on 09-Feb-2022 10:33AM
+
+
+
+### Parallel LSF Setup
+
+There are multiple race conditions when dealing with a git repo in a parallel nature.
+If you follow these steps, the lsf jobs will work in publish mode with one down side.
+
+1) Call `TestIds.lsf_init(git_repo, publish_flag)` before you kick off any lsf jobs. IMPORTANT: `git_repo` and `publish_flag` are not tied to your configure method declarations
+2) Call `TestIds.lsf_shutdown(publish_flag)` after you kick off all the jobs and you Origen.lsf.wait_for_completion. IMPORTANT: `publish_flag` are not tied to your configure method declarations
+
+The downside of this implementation is that the repo will be locked until all LSF jobs are complete. It is recommended that you only run in publish mode when you are trying to release an application version.
+
+~~~ruby
+# User defined setup for LSF job submission
+# Example TestIds.lsf_init(Origen.app.config.test_ids_repo, !(Origen.mode.debug?))
+TestIds.lsf_init(git_repo, publish_flag)
+# Submit all LSF jobs
+Origen.lsf.wait_for_completion
+# Example TestIds.lsf_shutdown(!(Origen.mode.debug?))
+TestIds.lsf_shutdown(publish_flag)
+~~~
+
 <a class="anchor release_tag" name="v1_2_2"></a>
 <h1><a href="#v1_2_2">Tag: v1.2.2</a></h1>
 
