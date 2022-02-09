@@ -457,6 +457,29 @@ TestIds.allocate(my_test, options)    # Bin and Softbin allocated from :my_confi
 If only `TestIds.number_config` had been set, then the others would continue to be allocated from the default
 active configuration.
 
+### Parallel LSF Setup
+
+There are multiple race conditions when dealing with a git repo in a parallel nature.
+If you follow these steps, the lsf jobs will work in publish mode with one down side.
+
+1) Call `TestIds.lsf_init(git_repo, publish_flag)` before you kick off any lsf jobs. IMPORTANT: `git_repo` and `publish_flag` are not tied to your configure method declarations
+2) Call `TestIds.lsf_shutdown(publish_flag)` after you kick off all the jobs and you Origen.lsf.wait_for_completion. IMPORTANT: `publish_flag` are not tied to your configure method declarations
+
+The downside of this implementation is that the repo will be locked until all LSF jobs are complete. It is recommended that you only run in publish mode when you are trying to release an application version.
+
+~~~ruby
+# User defined setup for LSF job submission
+# Example TestIds.lsf_init(Origen.app.config.test_ids_repo, !(Origen.mode.debug?))
+TestIds.lsf_init(git_repo, publish_flag)
+
+# Submit all LSF jobs
+
+Origen.lsf.wait_for_completion
+# Example TestIds.lsf_shutdown(!(Origen.mode.debug?))
+TestIds.lsf_shutdown(publish_flag)
+~~~
+
+
 ## Notes on Duplicates
 
 The time is recorded each time a reference is made to an ID number when generating a test program, this means

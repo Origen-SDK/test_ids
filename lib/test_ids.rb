@@ -239,8 +239,76 @@ module TestIds
       @publish = val ? :save : :dont_save
     end
 
+    def lsf_manual_init_shutdown
+      if @lsf_manual_init_shutdown
+        true
+      end
+      false
+    end
+
     def next_in_range(range, options)
       current_configuration.allocator.next_in_range(range, options)
+    end
+
+    def lsf_init(git_repo, lsf_publish)
+      @lsf_manual_init_shutdown = true
+      local_var_git_database_dir = "#{Origen.app.imports_directory}/test_ids/#{Pathname.new(git_repo).basename}"
+      FileUtils.mkdir_p(local_var_git_database_dir)
+      unless File.exist?("#{local_var_git_database_dir}/.git")
+        FileUtils.rm_rf(local_var_git_database_dir) if File.exist?(local_var_git_database_dir)
+        FileUtils.mkdir_p(local_var_git_database_dir)
+        Dir.chdir local_var_git_database_dir do
+          `git clone #{git_repo} .`
+          unless File.exist?('lock.json')
+            # Should really try to use the Git driver for this
+            exec 'touch lock.json'
+            exec 'git add lock.json'
+            exec 'git commit -m "Initial commit"'
+            exec 'git push'
+          end
+        end
+      end
+      @local = local_var_git_database_dir
+      @repo = ::Git.open(local_var_git_database_dir)
+      # Get rid of any local edits coming in here, this is only called once at the start
+      # of the program generation run.
+      # No need to pull latest as that will be done when we obtain a lock.
+      @repo.reset_hard
+      @git = Git.new(local: local_var_git_database_dir, remote: @repo)
+      if lsf_publish
+        return if @lock_open
+        Origen.profile 'Obtaining test IDs lock' do
+          until @git.available_to_lock?(@repo)
+            puts
+            puts "Waiting for lock, currently locked by #{@git.lock_user} (the lock will expire in less than #{@git.lock_minutes_remaining} #{'minute'.pluralize(@git.lock_minutes_remaining)} if not released before that)"
+            puts
+            sleep 5
+          end
+          data = {
+            'user'    => User.current.name,
+            'expires' => (Time.now + @git.minutes(5)).to_f
+          }
+          @git.write('lock.json', JSON.pretty_generate(data))
+          repo.commit('Obtaining lock')
+          repo.push('origin')
+        end
+        @lock_open = true
+      end
+    end
+
+    def lsf_shutdown(lsf_publish)
+      if lsf_publish
+        Origen.profile 'Publishing the test IDs store' do
+          data = {
+            'user'    => nil,
+            'expires' => nil
+          }
+          @git.write('lock.json', JSON.pretty_generate(data))
+          repo.add  # Checkin everything
+          repo.commit('Publishing latest store')
+          repo.push('origin', 'master', force: true)
+        end
+      end
     end
 
     ## When set to true, all numbers generated will be checked to see if they comply
