@@ -11,7 +11,7 @@ gem 'ripper-tags'
 # Uncomment these if you want to use a visual debugger (e.g. Visual Studio Code) to debug your app
 #gem 'ruby-debug-ide'
 #gem 'debase'
-gem 'nokogiri', '1.10.10'
+gem 'nokogiri', '1.13.4'
 
 # Specify your gem's runtime dependencies in test_ids.gemspec
 # THIS LINE SHOULD BE LEFT AT THE END
