@@ -433,8 +433,10 @@ module TestIds
       end
 
       # Update the supplied options hash that will be forwarded to the program generator
-      options[type] = val['number']
-      options["#{type}_size".to_sym] = val['size']
+      unless type == :bin && options[:bin].is_a?(String)
+        options[type] = val['number']
+        options["#{type}_size".to_sym] = val['size']
+      end
     end
 
     def allocation_required?(type, options)
