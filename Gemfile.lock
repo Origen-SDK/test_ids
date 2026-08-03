@@ -47,6 +47,7 @@ GEM
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     dry-inflector (0.2.0)
+    ffi (1.17.4)
     gems (0.8.3)
     git (1.19.1)
       addressable (~> 2.8)
@@ -91,6 +92,8 @@ GEM
     nokogiri (1.13.10-aarch64-linux)
       racc (~> 1.4)
     nokogiri (1.13.10-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.13.10-x64-mingw32)
       racc (~> 1.4)
     nokogiri (1.13.10-x86_64-darwin)
       racc (~> 1.4)
@@ -169,6 +172,12 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    rest-client (2.1.0-x64-mingw32)
+      ffi (~> 1.9)
+      http-accept (>= 1.7.0, < 2.0)
+      http-cookie (>= 1.0.2, < 2.0)
+      mime-types (>= 1.16, < 4.0)
+      netrc (~> 0.8)
     rexml (3.4.4)
     ripper-tags (1.0.2)
     rodf (1.2.0)
@@ -234,6 +243,7 @@ PLATFORMS
   arm-linux
   arm-linux-musl
   arm64-darwin
+  x64-mingw32
   x86_64-darwin
   x86_64-linux
   x86_64-linux-musl
