@@ -1,6 +1,6 @@
 require 'origen'
 module Origen
-  class <<self
+  class << self
     # Override the Origen.reset_interface method to clear out the TestIds
     # configuration, so that it doesn't carry over from one flow to the next
     alias_method :_orig_reset_interface, :reset_interface

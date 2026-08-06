@@ -76,12 +76,12 @@ module TestIds
           assigned_value = range[@pointer]
         end
         # Now update the database pointers to point to the lastest assigned softbin for a given range.
-        rangehash.merge!(:"#{range_definition}" => "#{range[@pointer]}")
+        rangehash.merge!("#{range_definition}": "#{range[@pointer]}")
       else
         # This is the case for a brand new range that has not been passed before
         # We start from the first value as the assigned softbin and update the database to reflect.
         @pointer = 0
-        rangehash.merge!(:"#{range_definition}" => "#{range[@pointer]}")
+        rangehash.merge!("#{range_definition}": "#{range[@pointer]}")
         assigned_value = range[@pointer]
       end
       unless !assigned_value.nil? && range.include?(assigned_value)
@@ -262,6 +262,7 @@ module TestIds
       #####################################################################
       { 'bins' => 'bins', 'softbins' => 'softbins', 'numbers' => 'test_numbers' }.each do |type, name|
         next if config.send(type).function?
+
         Origen.log.info "Checking all #{name} assignments are valid..."
         also_remove_from = []
         if type == 'bin'
@@ -286,6 +287,7 @@ module TestIds
       #####################################################################
       { 'bins' => 'bins', 'softbins' => 'softbins', 'numbers' => 'test_numbers' }.each do |type, name|
         next if config.send(type).function?
+
         Origen.log.info "Checking all #{name} references are valid..."
         removed = remove_invalid_references(config.send(type), store['references'][type], store['manually_assigned'][type])
         if removed == 0
@@ -500,6 +502,7 @@ module TestIds
               if num.size > max_size
                 fail "The allocated number, #{num}, overflows the #{t} field in the #{type} algorithm - #{algo}"
               end
+
               number = number.sub(/#{t.to_s[0]}+/, num.rjust(max_size, '0'))
             end
           end
@@ -540,9 +543,7 @@ module TestIds
         else
           b = conf.include.next(after: instance_variable_get("@last_#{type}"), size: options[:size])
           instance_variable_set("@last_#{type}", nil)
-          while b && (store['manually_assigned'][type_plural][b.to_s] || conf.exclude.include?(b))
-            b = conf.include.next(size: options[:size])
-          end
+          b = conf.include.next(size: options[:size]) while b && (store['manually_assigned'][type_plural][b.to_s] || conf.exclude.include?(b))
           # When no number is returned it means we have used them all, all future generation
           # now switches to reclaim mode
           if b

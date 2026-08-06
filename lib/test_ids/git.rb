@@ -32,9 +32,7 @@ module TestIds
           accept = repos.map.with_index { |r, i| i }
           puts
           selection = repos.size + 1
-          until repos[selection]
-            selection = get_text(single: true, accept: accept).to_i
-          end
+          selection = get_text(single: true, accept: accept).to_i until repos[selection]
         else
           selection = 0
         end
@@ -130,6 +128,7 @@ module TestIds
     def get_lock
       if !(TestIds.lsf_manual_init_shutdown) && Origen.running_locally?
         return if @lock_open
+
         Origen.profile 'Obtaining test IDs lock' do
           until available_to_lock?(@repo)
             puts

@@ -14,7 +14,7 @@ Usage: origen test_ids:repair ID [options]
   # opts.on('--bins', 'Clear the bin database') {  options[:bins] = true }
   # opts.on('--softbins', 'Clear the softbin database') {  options[:softbins] = true }
   # opts.on('--numbers', 'Clear the test number database') {  options[:numbers] = true }
-  opts.on('-d', '--debugger', 'Enable the debugger') {  options[:debugger] = true }
+  opts.on('-d', '--debugger', 'Enable the debugger') { options[:debugger] = true }
   app_options.each do |app_option|
     opts.on(*app_option) {}
   end

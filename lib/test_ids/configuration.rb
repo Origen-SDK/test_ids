@@ -36,6 +36,7 @@ module TestIds
         if function?
           fail 'valid? is not supported for algorithm or callback-based assignments'
         end
+
         number = number.to_i
         include.include?(number) && !exclude.include?(number)
       end

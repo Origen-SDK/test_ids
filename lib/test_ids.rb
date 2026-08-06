@@ -1,5 +1,5 @@
 require 'origen'
-require_relative '../config/application.rb'
+require_relative '../config/application'
 require 'origen_testers'
 
 module TestIds
@@ -14,7 +14,7 @@ module TestIds
   require 'test_ids/origen/origen'
   require 'test_ids/origen_testers/flow'
 
-  class <<self
+  class << self
     # Allocates a number to the given test and returns a new hash containing
     # :bin, :softbin and :number keys.
     #
@@ -27,8 +27,7 @@ module TestIds
       inject_flow_id(opts)
       current_configuration.allocator.allocate(instance, opts)
       { bin: opts[:bin], bin_size: opts[:bin_size], softbin: opts[:softbin], softbin_size: opts[:softbin_size],
-        number: opts[:number], number_size: opts[:number_size]
-      }
+        number: opts[:number], number_size: opts[:number_size] }
     end
 
     # Similar to allocate, but allocates a test number only, i.e. no bin or softbin
@@ -126,6 +125,7 @@ module TestIds
       unless @configuration[id]
         fail "The TestIds configuration '#{id}' has not been defined yet!"
       end
+
       @configuration_id = id
     end
 
@@ -214,6 +214,7 @@ module TestIds
       if @configuration
         fail 'TestIds.repo must be set before creating the first configuration'
       end
+
       @repo = val
     end
 
@@ -236,6 +237,7 @@ module TestIds
       unless [true, false].include?(val)
         fail 'TestIds.publish must be set to either true or false'
       end
+
       @publish = val ? :save : :dont_save
     end
 
@@ -277,6 +279,7 @@ module TestIds
       @git = Git.new(local: local_var_git_database_dir, remote: @repo)
       if lsf_publish
         return if @lock_open
+
         Origen.profile 'Obtaining test IDs lock' do
           until @git.available_to_lock?(@repo)
             puts
