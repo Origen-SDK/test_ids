@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Flow.create do
   if dut.test_ids == 2
     func :t1, bin: 11

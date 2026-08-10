@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'optparse'
 
 options = {}
@@ -5,14 +7,14 @@ options = {}
 # App options are options that the application can supply to extend this command
 app_options = @application_options || []
 opt_parser = OptionParser.new do |opts|
-  opts.banner = <<-EOT
-Clear all existing bin, softbin or test number allocations in the given TestId database.
+  opts.banner = <<~EOT
+    Clear all existing bin, softbin or test number allocations in the given TestId database.
 
-Usage: origen test_ids:clear [ID] [options]
+    Usage: origen test_ids:clear [ID] [options]
 
-Examples: origen test_ids:clear --bins                      # Clear the bins in the default database
-          origen test_ids:clear wafer_test --numbers        # Clear the test numbers in the wafer_test database
-          origen test_ids:clear --bins --softbin --numbers  # Clear everything in the default database
+    Examples: origen test_ids:clear --bins                      # Clear the bins in the default database
+              origen test_ids:clear wafer_test --numbers        # Clear the test numbers in the wafer_test database
+              origen test_ids:clear --bins --softbin --numbers  # Clear everything in the default database
 
   EOT
   opts.on('--bins', 'Clear the bin database') { options[:bins] = true }
@@ -25,7 +27,10 @@ Examples: origen test_ids:clear --bins                      # Clear the bins in 
     opts.on(*app_option) {}
   end
   opts.separator ''
-  opts.on('-h', '--help', 'Show this message') { puts opts; exit 0 }
+  opts.on('-h', '--help', 'Show this message') do
+    puts opts
+    exit 0
+  end
 end
 
 opt_parser.parse! ARGV
@@ -42,7 +47,7 @@ begin
   if a.nil?
     Origen.log.error "No configuration file could be found for file ID: '#{ARGV.first}'!"
     Origen.log.warn 'By default, the correct ID to pass in will need to match the filename in the form: store_<file id>.json'
-    fail
+    raise
   end
   a.clear(options)
   a.save

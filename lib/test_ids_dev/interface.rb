@@ -1,8 +1,10 @@
+# frozen_string_literal: true
+
 module TestIdsDev
   class Interface
     include OrigenTesters::ProgramGenerators
 
-    def initialize(options = {})
+    def initialize(_options = {})
       case dut.test_ids
       when 1
         TestIds.configure id: :cfg1 do |config|

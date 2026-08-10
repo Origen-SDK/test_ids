@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # This file is used to boot your plugin when it is running in standalone mode
 # from its own workspace - i.e. when the plugin is being developed.
 #
@@ -8,12 +10,12 @@
 # the development environment for this app. For example, this is typically used
 # to load some additional test classes to use your plugin APIs so that they can
 # be tested and/or interacted with in the console.
-require "test_ids"
+require 'test_ids'
 
 module TestIdsDev
   # Example of how to explicitly require a file
   # require "test_ids_dev/my_file"
-    
+
   # Load all files in the lib/test_ids_dev directory.
   # Note that there is no problem from requiring a file twice (Ruby will ignore
   # the second require), so if you have a file that must be required first, then

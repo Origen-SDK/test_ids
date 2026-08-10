@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TestIds
   class Configuration
     class Item
@@ -33,9 +35,7 @@ module TestIds
       end
 
       def valid?(number)
-        if function?
-          fail 'valid? is not supported for algorithm or callback-based assignments'
-        end
+        raise 'valid? is not supported for algorithm or callback-based assignments' if function?
 
         number = number.to_i
         include.include?(number) && !exclude.include?(number)
@@ -56,7 +56,7 @@ module TestIds
           @exclude.load_from_serialized(o['exclude'])
         elsif o == 'callback'
           callback do
-            fail 'The callback for this configuration is not available!'
+            raise 'The callback for this configuration is not available!'
           end
         else
           self.algorithm = o
@@ -72,7 +72,7 @@ module TestIds
           {
             'include' => include,
             'exclude' => exclude,
-            'size'    => size
+            'size' => size
           }.to_json(*a)
         end
       end
@@ -86,22 +86,16 @@ module TestIds
       end
     end
 
-    attr_reader :allocator
+    attr_reader :allocator, :id
 
     def initialize(id)
       @id = id
       @allocator = Allocator.new(self)
     end
 
-    def id
-      @id
-    end
-
     def bins(options = {}, &block)
       @bins ||= Item.new
-      if block_given?
-        @bins.callback(options, &block)
-      end
+      @bins.callback(options, &block) if block_given?
       @bins
     end
 
@@ -112,9 +106,7 @@ module TestIds
 
     def softbins(options = {}, &block)
       @softbins ||= Item.new
-      if block_given?
-        @softbins.callback(options, &block)
-      end
+      @softbins.callback(options, &block) if block_given?
       @softbins
     end
 
@@ -125,9 +117,7 @@ module TestIds
 
     def numbers(options = {}, &block)
       @numbers ||= Item.new
-      if block_given?
-        @numbers.callback(options, &block)
-      end
+      @numbers.callback(options, &block) if block_given?
       @numbers
     end
 
@@ -153,10 +143,10 @@ module TestIds
     end
 
     def validate!
-      unless validated?
-        @validated = true
-        freeze
-      end
+      return if validated?
+
+      @validated = true
+      freeze
     end
 
     def empty?
@@ -176,9 +166,9 @@ module TestIds
 
     def to_json(*a)
       {
-        'bins'     => bins,
+        'bins' => bins,
         'softbins' => softbins,
-        'numbers'  => numbers
+        'numbers' => numbers
       }.to_json(*a)
     end
 

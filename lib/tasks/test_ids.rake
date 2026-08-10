@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # You can define any Rake tasks to support your application here (or in any file
 # ending in .rake in this directory).
 #

@@ -1,7 +1,8 @@
-require "spec_helper"
+# frozen_string_literal: true
 
-describe "A Bin Array" do
+require 'spec_helper'
 
+describe 'A Bin Array' do
   it 'min and max works' do
     b = TestIds::BinArray.new
     b << 100
@@ -17,7 +18,7 @@ describe "A Bin Array" do
     b.max.should == 300
   end
 
-  it "the next method works" do
+  it 'the next method works' do
     b = TestIds::BinArray.new
     b << 10
     b << (15..20)
@@ -30,16 +31,16 @@ describe "A Bin Array" do
     b.next.should == 20
     b.next.should == 30
     # When the end is reached it should return nil
-    b.next.should == nil
-    b.next.should == nil
-    b.next.should == nil
+    b.next.should.nil?
+    b.next.should.nil?
+    b.next.should.nil?
     b.next(after: 13).should == 15
     b.next(after: 25).should == 30
-    b.next(after: 100).should == nil
-    b.next.should == nil
+    b.next(after: 100).should.nil?
+    b.next.should.nil?
   end
 
-  it "the next method can handle size reservations" do
+  it 'the next method can handle size reservations' do
     b = TestIds::BinArray.new
     b << (10..20)
     b << (30..40)
@@ -48,10 +49,10 @@ describe "A Bin Array" do
     b.next(size: 4).should == 14
     b.next(size: 4).should == 30
     b.next(size: 4).should == 34
-    b.next(size: 4).should == nil
+    b.next(size: 4).should.nil?
   end
 
-  it "the include? method works" do
+  it 'the include? method works' do
     b = TestIds::BinArray.new
     b << 10
     b << (15..20)
@@ -68,7 +69,7 @@ describe "A Bin Array" do
     b.include?(31).should == false
   end
 
-  it "can yield all numbers in the range" do
+  it 'can yield all numbers in the range' do
     b = TestIds::BinArray.new
     b << 10
     b << (15..20)
@@ -81,7 +82,7 @@ describe "A Bin Array" do
 
     b.yield_all do |i|
       r = a.delete(i)
-      r.should_not == nil
+      r.should_not.nil?
     end
 
     a.empty?.should == true

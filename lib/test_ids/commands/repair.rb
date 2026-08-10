@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'optparse'
 
 options = {}
@@ -5,10 +7,10 @@ options = {}
 # App options are options that the application can supply to extend this command
 app_options = @application_options || []
 opt_parser = OptionParser.new do |opts|
-  opts.banner = <<-EOT
-Performs maintenance on the given TestId database.
+  opts.banner = <<~EOT
+    Performs maintenance on the given TestId database.
 
-Usage: origen test_ids:repair ID [options]
+    Usage: origen test_ids:repair ID [options]
 
   EOT
   # opts.on('--bins', 'Clear the bin database') {  options[:bins] = true }
@@ -19,7 +21,10 @@ Usage: origen test_ids:repair ID [options]
     opts.on(*app_option) {}
   end
   opts.separator ''
-  opts.on('-h', '--help', 'Show this message') { puts opts; exit 0 }
+  opts.on('-h', '--help', 'Show this message') do
+    puts opts
+    exit 0
+  end
 end
 
 opt_parser.parse! ARGV

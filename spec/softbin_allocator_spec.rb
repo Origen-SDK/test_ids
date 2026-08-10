@@ -1,7 +1,8 @@
-require "spec_helper"
+# frozen_string_literal: true
 
-describe "The softbin allocator" do
+require 'spec_helper'
 
+describe 'The softbin allocator' do
   before :each do
     TestIds.send(:reset)
   end
@@ -11,14 +12,14 @@ describe "The softbin allocator" do
     options
   end
 
-  it "is alive" do
+  it 'is alive' do
     TestIds.configure do |config|
       config.softbins.include << 3
     end
     a(:t1)[:softbin].should == 3
   end
 
-  it "softbin numbers increment" do
+  it 'softbin numbers increment' do
     TestIds.configure do |config|
       config.softbins.include << (1..3)
     end
@@ -27,7 +28,7 @@ describe "The softbin allocator" do
     a(:t3)[:softbin].should == 3
   end
 
-  it "duplicate tests pick up the same softbin number" do
+  it 'duplicate tests pick up the same softbin number' do
     TestIds.configure do |config|
       config.softbins.include << (1..3)
     end
@@ -37,7 +38,7 @@ describe "The softbin allocator" do
     a(:t3)[:softbin].should == 3
   end
 
-  it "caller can override softbin number" do
+  it 'caller can override softbin number' do
     TestIds.configure do |config|
       config.softbins.include << (1..4)
     end
@@ -45,15 +46,15 @@ describe "The softbin allocator" do
     a(:t2, softbin: 3)[:softbin].should == 3
   end
 
-  it "softbin assignments can be inhibited by passing :none" do
+  it 'softbin assignments can be inhibited by passing :none' do
     TestIds.configure do |config|
       config.softbins.include << (1..4)
     end
     a(:t1)[:softbin].should == 1
-    a(:t1, sbin: :none)[:softbin].should == nil
+    a(:t1, sbin: :none)[:softbin].should.nil?
   end
 
-  it "manually assigned softbins are reserved" do
+  it 'manually assigned softbins are reserved' do
     TestIds.configure do |config|
       config.softbins.include << (1..5)
     end
@@ -67,7 +68,7 @@ describe "The softbin allocator" do
     TestIds.allocate(:t5)[:softbin].should == 5
   end
 
-  it "excluded softbins are not used" do
+  it 'excluded softbins are not used' do
     TestIds.configure do |config|
       config.softbins.include << (1..4)
       config.softbins.exclude << 3
@@ -77,41 +78,41 @@ describe "The softbin allocator" do
     a(:t3)[:softbin].should == 4
   end
 
-  it "the system can be saved to a file and resumed" do
+  it 'the system can be saved to a file and resumed' do
     TestIds.configure do |config|
       config.softbins.include << (1..4)
     end
     a(:t1)[:softbin].should == 1
     a(:t2, softbin: 3)[:softbin].should == 3
-    
-    #TestIds.allocator.save
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+
+    # TestIds.allocator.save
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.softbins.include << (1..4)
-    #end
+    # end
     a(:t3)[:softbin].should == 2
     a(:t4)[:softbin].should == 4
   end
 
-  it "previously assigned manual softbins are reclaimed next time" do
+  it 'previously assigned manual softbins are reclaimed next time' do
     TestIds.configure do |config|
       config.softbins.include << (1..4)
     end
     a(:t1)[:softbin].should == 1
     a(:t2)[:softbin].should == 2
     a(:t3, softbin: 2)[:softbin].should == 2
-    
-    #TestIds.allocator.save
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+
+    # TestIds.allocator.save
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.softbins.include << (1..4)
-    #end
+    # end
     a(:t1)[:softbin].should == 1
     a(:t2)[:softbin].should == 3
     a(:t3, softbin: 2)[:softbin].should == 2
   end
 
-  it "when all softbins are used they will be re-used oldest first" do
+  it 'when all softbins are used they will be re-used oldest first' do
     TestIds.configure do |config|
       config.softbins.include << (1..3)
     end
@@ -122,30 +123,30 @@ describe "The softbin allocator" do
     a(:t4)[:softbin].should == 1
     a(:t5)[:softbin].should == 2
 
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.softbins.include << (1..3)
-    #end
+    # end
     a(:t1)[:softbin].should == 1
     a(:t2)[:softbin].should == 2
     a(:t3)[:softbin].should == 3
-    a(:t1)[:softbin].should == 1  # More recent reference makes 2 the oldest
+    a(:t1)[:softbin].should == 1 # More recent reference makes 2 the oldest
     a(:t6)[:softbin].should == 2
 
-    #TestIds.allocator.save
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+    # TestIds.allocator.save
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.softbins.include << (1..3)
-    #end
+    # end
     a(:t1)[:softbin].should == 1
     a(:t2)[:softbin].should == 2
     a(:t3)[:softbin].should == 3
-    a(:t1)[:softbin].should == 1  # More recent reference makes 2 the oldest
+    a(:t1)[:softbin].should == 1 # More recent reference makes 2 the oldest
     a(:t7)[:softbin].should == 2
     a(:t8)[:softbin].should == 3
   end
 
-  it "the softbins can be generated from an algorithm" do
+  it 'the softbins can be generated from an algorithm' do
     TestIds.configure do |config|
       config.bins.include << (1..3)
       config.softbins.algorithm = :bbb000
@@ -161,7 +162,7 @@ describe "The softbin allocator" do
     t[:softbin].should == 3000
   end
 
-  it "the softbin can be set to the test number" do
+  it 'the softbin can be set to the test number' do
     TestIds.configure do |config|
       config.bins.include << (1..3)
       config.softbins.algorithm = :nnnn
@@ -181,7 +182,7 @@ describe "The softbin allocator" do
     t[:number].should == 8002
   end
 
-  it "algorithm based softbins can include an increment counter" do
+  it 'algorithm based softbins can include an increment counter' do
     TestIds.configure do |config|
       config.bins.include << 3
       config.softbins.algorithm = :bx
@@ -204,10 +205,10 @@ describe "The softbin allocator" do
     a(:t10)[:softbin].should == 33
   end
 
-  it "the incremental counter can be leading" do
+  it 'the incremental counter can be leading' do
     TestIds.configure do |config|
       config.bins.include << 3
-      config.softbins.algorithm = "xxxbbb"
+      config.softbins.algorithm = 'xxxbbb'
     end
     a(:t0)[:softbin].should == 3
     a(:t1)[:softbin].should == 1003
@@ -216,7 +217,7 @@ describe "The softbin allocator" do
     a(:t2)[:softbin].should == 2003
   end
 
-  it "the softbins can be generated from a callback" do
+  it 'the softbins can be generated from a callback' do
     TestIds.configure do |config|
       config.bins.include << (1..3)
       config.softbins.callback do |options|
@@ -234,7 +235,7 @@ describe "The softbin allocator" do
     t[:softbin].should == 9
   end
 
-  it "tests can reserve multiple softbins" do
+  it 'tests can reserve multiple softbins' do
     TestIds.configure do |config|
       config.softbins.include << (10..30)
       config.softbins.size = 5

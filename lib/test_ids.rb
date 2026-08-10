@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'origen'
 require_relative '../config/application'
 require 'origen_testers'
@@ -53,7 +55,7 @@ module TestIds
         softbin: opts[:softbin], softbin_size: opts[:softbin_size]
       }
     end
-    alias_method :allocate_soft_bin, :allocate_softbin
+    alias allocate_soft_bin allocate_softbin
 
     # Similar to allocate, but allocates a bin number only, i.e. no softbin or test number
     def allocate_bin(instance, options = {})
@@ -69,10 +71,10 @@ module TestIds
 
     # @api private
     def inject_flow_id(options)
-      if Origen.interface_loaded?
-        flow = Origen.interface.flow
-        options[:test_ids_flow_id] = flow.try(:top_level).try(:id) || flow.id
-      end
+      return unless Origen.interface_loaded?
+
+      flow = Origen.interface.flow
+      options[:test_ids_flow_id] = flow.try(:top_level).try(:id) || flow.id
     end
 
     # Load an existing allocator, which will be loaded with a configuration based on what has
@@ -81,11 +83,11 @@ module TestIds
     # @api internal
     def load_allocator(id = nil)
       f = TestIds.database_file(id)
-      if File.exist?(f)
-        a = Configuration.new(id).allocator
-        a.load_configuration_from_store
-        a
-      end
+      return unless File.exist?(f)
+
+      a = Configuration.new(id).allocator
+      a.load_configuration_from_store
+      a
     end
 
     def current_configuration
@@ -94,14 +96,17 @@ module TestIds
 
     def configuration(id, fail_on_missing = true)
       return @configuration[id] if @configuration && @configuration[id]
-      if fail_on_missing
-        fail('You have to create the configuration first before you can access it')
-      end
+      return unless fail_on_missing
+
+      raise('You have to create the configuration first before you can access it')
     end
-    alias_method :config, :configuration
+    alias config configuration
 
     def configure(id = nil, options = {})
-      id, options = nil, id if id.is_a?(Hash)
+      if id.is_a?(Hash)
+        options = id
+        id = nil
+      end
 
       @configuration_id = id || options[:id] || :not_specified
 
@@ -122,9 +127,7 @@ module TestIds
 
     # Switch the current configuration to the given ID
     def config=(id)
-      unless @configuration[id]
-        fail "The TestIds configuration '#{id}' has not been defined yet!"
-      end
+      raise "The TestIds configuration '#{id}' has not been defined yet!" unless @configuration[id]
 
       @configuration_id = id
     end
@@ -134,24 +137,14 @@ module TestIds
       @configuration.ids
     end
 
-    def bin_config=(id)
-      @bin_config = id
-    end
+    attr_writer :bin_config, :softbin_config, :number_config
 
     def bin_config
       @bin_config ? configuration(@bin_config, false) : current_configuration
     end
 
-    def softbin_config=(id)
-      @softbin_config = id
-    end
-
     def softbin_config
       @softbin_config ? configuration(@softbin_config, false) : current_configuration
-    end
-
-    def number_config=(id)
-      @number_config = id
     end
 
     def number_config
@@ -184,14 +177,14 @@ module TestIds
     # Returns a full path to the database file for the given id, returns nil if
     # git storage has not been enabled
     def database_file(id)
-      if repo
-        if id == :not_specified || !id || id == ''
-          f = 'store.json'
-        else
-          f = "store_#{id.to_s.downcase}.json"
-        end
-        "#{git_database_dir}/#{f}"
-      end
+      return unless repo
+
+      f = if id == :not_specified || !id || id == ''
+            'store.json'
+          else
+            "store_#{id.to_s.downcase}.json"
+          end
+      "#{git_database_dir}/#{f}"
     end
 
     def git_database_dir
@@ -202,24 +195,16 @@ module TestIds
       end
     end
 
-    def git
-      @git
-    end
+    attr_reader :git, :repo
 
     def repo=(val)
       return if @repo && @repo == val
       if @repo && @repo != val
-        fail 'You can only use a single test ids repository per program generation run, one per application is recommended'
+        raise 'You can only use a single test ids repository per program generation run, one per application is recommended'
       end
-      if @configuration
-        fail 'TestIds.repo must be set before creating the first configuration'
-      end
+      raise 'TestIds.repo must be set before creating the first configuration' if @configuration
 
       @repo = val
-    end
-
-    def repo
-      @repo
     end
 
     def publish?
@@ -228,23 +213,15 @@ module TestIds
 
     def publish=(val)
       return if @publish && publish? == val
-      if @publish && publish? != val
-        fail 'You can only use a single setting for publish per program generation run'
-      end
-      if @configuration
-        fail 'TestIds.publish must be set before creating the first configuration'
-      end
-      unless [true, false].include?(val)
-        fail 'TestIds.publish must be set to either true or false'
-      end
+      raise 'You can only use a single setting for publish per program generation run' if @publish && publish? != val
+      raise 'TestIds.publish must be set before creating the first configuration' if @configuration
+      raise 'TestIds.publish must be set to either true or false' unless [true, false].include?(val)
 
       @publish = val ? :save : :dont_save
     end
 
     def lsf_manual_init_shutdown
-      if @lsf_manual_init_shutdown
-        true
-      end
+      true if @lsf_manual_init_shutdown
       false
     end
 
@@ -277,40 +254,39 @@ module TestIds
       # No need to pull latest as that will be done when we obtain a lock.
       @repo.reset_hard
       @git = Git.new(local: local_var_git_database_dir, remote: @repo)
-      if lsf_publish
-        return if @lock_open
+      return unless lsf_publish
+      return if @lock_open
 
-        Origen.profile 'Obtaining test IDs lock' do
-          until @git.available_to_lock?(@repo)
-            puts
-            puts "Waiting for lock, currently locked by #{@git.lock_user} (the lock will expire in less than #{@git.lock_minutes_remaining} #{'minute'.pluralize(@git.lock_minutes_remaining)} if not released before that)"
-            puts
-            sleep 5
-          end
-          data = {
-            'user'    => User.current.name,
-            'expires' => (Time.now + @git.minutes(5)).to_f
-          }
-          @git.write('lock.json', JSON.pretty_generate(data))
-          repo.commit('Obtaining lock')
-          repo.push('origin')
+      Origen.profile 'Obtaining test IDs lock' do
+        until @git.available_to_lock?(@repo)
+          puts
+          puts "Waiting for lock, currently locked by #{@git.lock_user} (the lock will expire in less than #{@git.lock_minutes_remaining} #{'minute'.pluralize(@git.lock_minutes_remaining)} if not released before that)"
+          puts
+          sleep 5
         end
-        @lock_open = true
+        data = {
+          'user' => User.current.name,
+          'expires' => (Time.now + @git.minutes(5)).to_f
+        }
+        @git.write('lock.json', JSON.pretty_generate(data))
+        repo.commit('Obtaining lock')
+        repo.push('origin')
       end
+      @lock_open = true
     end
 
     def lsf_shutdown(lsf_publish)
-      if lsf_publish
-        Origen.profile 'Publishing the test IDs store' do
-          data = {
-            'user'    => nil,
-            'expires' => nil
-          }
-          @git.write('lock.json', JSON.pretty_generate(data))
-          repo.add  # Checkin everything
-          repo.commit('Publishing latest store')
-          repo.push('origin', 'master', force: true)
-        end
+      return unless lsf_publish
+
+      Origen.profile 'Publishing the test IDs store' do
+        data = {
+          'user' => nil,
+          'expires' => nil
+        }
+        @git.write('lock.json', JSON.pretty_generate(data))
+        repo.add # Checkin everything
+        repo.commit('Publishing latest store')
+        repo.push('origin', 'master', force: true)
       end
     end
 
@@ -332,31 +308,30 @@ module TestIds
     # only needed for cases where running several targets
     # back to back, e.g. for regression testing
     def reset_everything(are_you_sure: false)
-      if are_you_sure
-        @repo = nil   # accessor
-        @git = nil   # accessor
-        @git_database_dir = nil
-        @git_initialized = nil
-        @configuration = nil
-        @configuration_id = nil
-        @bin_config = nil
-        @softbin_config = nil
-        @number_config = nil
-        @publish = nil
-      end
+      return unless are_you_sure
+
+      @repo = nil # accessor
+      @git = nil # accessor
+      @git_database_dir = nil
+      @git_initialized = nil
+      @configuration = nil
+      @configuration_id = nil
+      @bin_config = nil
+      @softbin_config = nil
+      @number_config = nil
+      @publish = nil
     end
 
     private
 
     def on_origen_shutdown
-      if !testing? && @configuration
-        if repo
-          @configuration.each do |id, config|
-            config.allocator.save
-          end
-          git.publish if publish?
-        end
+      return unless !testing? && @configuration
+      return unless repo
+
+      @configuration.each do |_id, config|
+        config.allocator.save
       end
+      git.publish if publish?
     end
 
     # For testing, clears all instances including the configuration
@@ -372,9 +347,7 @@ module TestIds
       @number_config = nil
     end
 
-    def testing=(val)
-      @testing = val
-    end
+    attr_writer :testing
 
     def testing?
       !!@testing

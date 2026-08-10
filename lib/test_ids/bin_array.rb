@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TestIds
   class BinArray
     def initialize
@@ -74,11 +76,11 @@ module TestIds
         end
       else
         v = @store.first
-        if v.is_a?(Range)
-          @next = v.min
-        else
-          @next = v
-        end
+        @next = if v.is_a?(Range)
+                  v.min
+                else
+                  v
+                end
       end
       if options[:size] && options[:size] > 1
         # Check that all the numbers in the range to be reserved are included in the allocation,
@@ -121,7 +123,7 @@ module TestIds
       nx = @next
       @pointer = nil
       @next = nil
-      while n = self.next
+      while (n = self.next)
         yield n
       end
       @pointer = p
@@ -141,13 +143,12 @@ module TestIds
           self.<<(i)
         elsif i.is_a?(String)
           # JSON does not serialize ranges well, take care of it here
-          if i =~ /^(\d+)\.\.(\d+)$/
-            self.<<((Regexp.last_match(1).to_i)..(Regexp.last_match(2).to_i))
-          else
-            fail "Unknown bin array object type (#{o.class}): #{o}"
-          end
+          raise "Unknown bin array object type (#{o.class}): #{o}" unless i =~ /^(\d+)\.\.(\d+)$/
+
+          self.<<((Regexp.last_match(1).to_i)..(Regexp.last_match(2).to_i))
+
         else
-          fail "Unknown bin array object type (#{o.class}): #{o}"
+          raise "Unknown bin array object type (#{o.class}): #{o}"
         end
       end
     end
@@ -155,7 +156,7 @@ module TestIds
     private
 
     def previous_pointer(i)
-      i == 0 ? @store.size - 1 : i - 1
+      i.zero? ? @store.size - 1 : i - 1
     end
 
     def min_val(v)

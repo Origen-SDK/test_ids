@@ -1,7 +1,9 @@
-$VERBOSE=nil  # Don't care about world writable dir warnings and the like
+# frozen_string_literal: true
+
+$VERBOSE = nil # Don't care about world writable dir warnings and the like
 
 require 'pathname'
-if File.exist? File.expand_path("../Gemfile", Pathname.new(__FILE__).realpath)
+if File.exist? File.expand_path('../Gemfile', Pathname.new(__FILE__).realpath)
   require 'rubygems'
   require 'bundler/setup'
 else
@@ -10,24 +12,24 @@ else
     `where origen`.split("\n").find do |match|
       match =~ /(.*)\\bin\\origen$/
     end
-    origen_top = $1.gsub("\\", "/")
+    origen_top = Regexp.last_match(1).gsub('\\', '/')
   else
-    origen_top = `which origen`.strip.sub("/bin/origen", "")
+    origen_top = `which origen`.strip.sub('/bin/origen', '')
   end
 
   $LOAD_PATH.unshift "#{origen_top}/lib"
 end
 
-require "origen"
+require 'origen'
 
-require "rspec/legacy_formatters"
+require 'rspec/legacy_formatters'
 require "#{Origen.top}/spec/format/origen_formatter"
-require "byebug"
+require 'byebug'
 require 'pry'
 require 'test_ids'
 TestIds.send(:testing=, true) # Stop it trying to save the database automatically
 
-def load_target(target="default")
+def load_target(target = 'default')
   Origen.target.switch_to target
   Origen.target.load!
 end
@@ -41,6 +43,6 @@ RSpec.configure do |config|
     # Enable only the newer, non-monkey-patching expect syntax.
     # For more details, see:
     #   - http://myronmars.to/n/dev-blog/2012/06/rspecs-new-expectation-syntax
-    expectations.syntax = [:should, :expect]
+    expectations.syntax = %i[should expect]
   end
 end

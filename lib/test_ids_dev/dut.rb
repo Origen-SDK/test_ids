@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module TestIdsDev
   class DUT
     include Origen::TopLevel

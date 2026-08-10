@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 # This file should be used to extend the origen with application specific commands
 
-# Map any command aliases here, for example to allow 'origen ex' to refer to a 
-# command called execute you would add a reference as shown below: 
-aliases ={
-#  "ex" => "execute",
+# Map any command aliases here, for example to allow 'origen ex' to refer to a
+# command called execute you would add a reference as shown below:
+aliases = {
+  #  "ex" => "execute",
 }
 
 # The requested command is passed in here as @command, this checks it against
@@ -13,33 +15,33 @@ aliases ={
 # Now branch to the specific task code
 case @command
 
-when "tags"  
+when 'tags'
   Dir.chdir Origen.root do
-    system("ripper-tags -R")
+    system('ripper-tags -R')
   end
   exit 0
 
 # Example of how to make a command to run unit tests, this simply invokes RSpec on
 # the spec directory
-when "specs"
-  require "rspec"
+when 'specs'
+  require 'rspec'
   exit RSpec::Core::Runner.run(['spec'])
 
 # Example of how to make a command to run diff-based tests
-when "examples", "test"
+when 'examples', 'test'
   Origen.load_application
   status = 0
 
   # Program generator integration test
-  ARGV = %w(program/prb1.rb -t default -e default -r approved)
+  ARGV = %w[program/prb1.rb -t default -e default -r approved].freeze
   load "#{Origen.top}/lib/origen/commands/program.rb"
-  ARGV = %W(program/prb1.rb -t dut2 -o #{Origen.root}/output/dut2 -e default -r approved/dut2)
+  ARGV = %W[program/prb1.rb -t dut2 -o #{Origen.root}/output/dut2 -e default -r approved/dut2].freeze
   load "#{Origen.top}/lib/origen/commands/program.rb"
 
-  if Origen.app.stats.changed_files == 0 &&
-     Origen.app.stats.new_files == 0 &&
-     Origen.app.stats.changed_patterns == 0 &&
-     Origen.app.stats.new_patterns == 0
+  if Origen.app.stats.changed_files.zero? &&
+     Origen.app.stats.new_files.zero? &&
+     Origen.app.stats.changed_patterns.zero? &&
+     Origen.app.stats.new_patterns.zero?
 
     Origen.app.stats.report_pass
   else
@@ -47,13 +49,13 @@ when "examples", "test"
     status = 1
   end
   puts
-  if @command == "test"
+  if @command == 'test'
     Origen.app.unload_target!
-    require "rspec"
+    require 'rspec'
     result = RSpec::Core::Runner.run(['spec'])
     status = status == 1 ? 1 : result
   end
-  exit status  # Exit with a 1 on the event of a failure per std unix result codes
+  exit status # Exit with a 1 on the event of a failure per std unix result codes
 
 # Always leave an else clause to allow control to fall back through to the
 # Origen command handler.
@@ -68,4 +70,4 @@ else
  test         Run both specs and examples, -c will enable coverage
   EOT
 
-end 
+end

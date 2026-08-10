@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'git'
 module TestIds
@@ -20,7 +22,7 @@ module TestIds
 
       def find
         repos = Dir.glob("#{Origen.app.imports_dir}/test_ids/*.git")
-        if repos.size == 0
+        if repos.empty?
           puts 'No TestIds repositories were found in this application'
         elsif repos.size > 1
           puts
@@ -29,7 +31,7 @@ module TestIds
           repos.each_with_index do |repo, i|
             puts "  #{i} - #{Pathname.new(repo).basename}"
           end
-          accept = repos.map.with_index { |r, i| i }
+          accept = repos.map.with_index { |_r, i| i }
           puts
           selection = repos.size + 1
           selection = get_text(single: true, accept: accept).to_i until repos[selection]
@@ -48,28 +50,28 @@ module TestIds
     end
 
     def initialize(options)
-      if !(TestIds.lsf_manual_init_shutdown) && Origen.running_locally?
-        unless File.exist?("#{options[:local]}/.git")
-          FileUtils.rm_rf(options[:local]) if File.exist?(options[:local])
-          FileUtils.mkdir_p(options[:local])
-          Dir.chdir options[:local] do
-            `git clone #{options[:remote]} .`
-            unless File.exist?('lock.json')
-              # Should really try to use the Git driver for this
-              exec 'touch lock.json'
-              exec 'git add lock.json'
-              exec 'git commit -m "Initial commit"'
-              exec 'git push'
-            end
+      return unless !TestIds.lsf_manual_init_shutdown && Origen.running_locally?
+
+      unless File.exist?("#{options[:local]}/.git")
+        FileUtils.rm_rf(options[:local]) if File.exist?(options[:local])
+        FileUtils.mkdir_p(options[:local])
+        Dir.chdir options[:local] do
+          `git clone #{options[:remote]} .`
+          unless File.exist?('lock.json')
+            # Should really try to use the Git driver for this
+            exec 'touch lock.json'
+            exec 'git add lock.json'
+            exec 'git commit -m "Initial commit"'
+            exec 'git push'
           end
         end
-        @local = options[:local]
-        @repo = ::Git.open(options[:local])
-        # Get rid of any local edits coming in here, this is only called once at the start
-        # of the program generation run.
-        # No need to pull latest as that will be done when we obtain a lock.
-        @repo.reset_hard
       end
+      @local = options[:local]
+      @repo = ::Git.open(options[:local])
+      # Get rid of any local edits coming in here, this is only called once at the start
+      # of the program generation run.
+      # No need to pull latest as that will be done when we obtain a lock.
+      @repo.reset_hard
     end
 
     # Roll the repo back to the given commit ID
@@ -102,19 +104,19 @@ module TestIds
 
     def exec(cmd)
       r = system(cmd)
-      unless r
-        fail "Something went wrong running command: #{cmd}"
-      end
+      return if r
+
+      raise "Something went wrong running command: #{cmd}"
     end
 
     def publish
-      if !(TestIds.lsf_manual_init_shutdown) && Origen.running_locally?
-        Origen.profile 'Publishing the test IDs store' do
-          release_lock
-          repo.add  # Checkin everything
-          repo.commit('Publishing latest store')
-          repo.push('origin', 'master', force: true)
-        end
+      return unless !TestIds.lsf_manual_init_shutdown && Origen.running_locally?
+
+      Origen.profile 'Publishing the test IDs store' do
+        release_lock
+        repo.add # Checkin everything
+        repo.commit('Publishing latest store')
+        repo.push('origin', 'master', force: true)
       end
     end
 
@@ -126,31 +128,30 @@ module TestIds
     end
 
     def get_lock
-      if !(TestIds.lsf_manual_init_shutdown) && Origen.running_locally?
-        return if @lock_open
+      return unless !TestIds.lsf_manual_init_shutdown && Origen.running_locally?
+      return if @lock_open
 
-        Origen.profile 'Obtaining test IDs lock' do
-          until available_to_lock?(@repo)
-            puts
-            puts "Waiting for lock, currently locked by #{lock_user} (the lock will expire in less than #{lock_minutes_remaining} #{'minute'.pluralize(lock_minutes_remaining)} if not released before that)"
-            puts
-            sleep 5
-          end
-          data = {
-            'user'    => User.current.name,
-            'expires' => (Time.now + minutes(5)).to_f
-          }
-          write('lock.json', JSON.pretty_generate(data))
-          repo.commit('Obtaining lock')
-          repo.push('origin')
+      Origen.profile 'Obtaining test IDs lock' do
+        until available_to_lock?(@repo)
+          puts
+          puts "Waiting for lock, currently locked by #{lock_user} (the lock will expire in less than #{lock_minutes_remaining} #{'minute'.pluralize(lock_minutes_remaining)} if not released before that)"
+          puts
+          sleep 5
         end
-        @lock_open = true
+        data = {
+          'user' => User.current.name,
+          'expires' => (Time.now + minutes(5)).to_f
+        }
+        write('lock.json', JSON.pretty_generate(data))
+        repo.commit('Obtaining lock')
+        repo.push('origin')
       end
+      @lock_open = true
     end
 
     def release_lock
       data = {
-        'user'    => nil,
+        'user' => nil,
         'expires' => nil
       }
       write('lock.json', JSON.pretty_generate(data))
@@ -161,11 +162,11 @@ module TestIds
       Origen.profile 'Checking for lock' do
         repo_to_use.fetch
         repo_to_use.reset_hard('origin/master')
-        if lock_content && lock_user && lock_user != User.current.name
-          result = Time.now.to_f > lock_expires
-        else
-          result = true
-        end
+        result = if lock_content && lock_user && lock_user != User.current.name
+                   Time.now.to_f > lock_expires
+                 else
+                   true
+                 end
       end
       result
     end
@@ -184,7 +185,7 @@ module TestIds
 
     def lock_content
       f = File.join(local, 'lock.json')
-      JSON.load(File.read(f)) if File.exist?(f)
+      JSON.parse(File.read(f)) if File.exist?(f)
     end
 
     def minutes(number)

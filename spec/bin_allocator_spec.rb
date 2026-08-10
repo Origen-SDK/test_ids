@@ -1,7 +1,8 @@
-require "spec_helper"
+# frozen_string_literal: true
 
-describe "The bin allocator" do
+require 'spec_helper'
 
+describe 'The bin allocator' do
   before :each do
     TestIds.send(:reset)
   end
@@ -11,14 +12,14 @@ describe "The bin allocator" do
     options
   end
 
-  it "is alive" do
+  it 'is alive' do
     TestIds.configure do |config|
       config.bins.include << 3
     end
     a(:t1)[:bin].should == 3
   end
 
-  it "bin numbers increment" do
+  it 'bin numbers increment' do
     TestIds.configure do |config|
       config.bins.include << (1..3)
     end
@@ -27,7 +28,7 @@ describe "The bin allocator" do
     a(:t3)[:bin].should == 3
   end
 
-  it "duplicate tests pick up the same bin number" do
+  it 'duplicate tests pick up the same bin number' do
     TestIds.configure do |config|
       config.bins.include << (1..3)
     end
@@ -37,7 +38,7 @@ describe "The bin allocator" do
     a(:t3)[:bin].should == 3
   end
 
-  it "caller can override bin number" do
+  it 'caller can override bin number' do
     TestIds.configure do |config|
       config.bins.include << (1..4)
     end
@@ -48,7 +49,7 @@ describe "The bin allocator" do
     TestIds.allocate(:t3)[:bin].should == 2
   end
 
-  it "manually assigned bins are reserved" do
+  it 'manually assigned bins are reserved' do
     TestIds.configure do |config|
       config.bins.include << (1..4)
     end
@@ -58,15 +59,15 @@ describe "The bin allocator" do
     a(:t4)[:bin].should == 4
   end
 
-  it "bin assignments can be inhibited by passing :none" do
+  it 'bin assignments can be inhibited by passing :none' do
     TestIds.configure do |config|
       config.bins.include << (1..4)
     end
     a(:t1)[:bin].should == 1
-    a(:t1, bin: :none)[:bin].should == nil
+    a(:t1, bin: :none)[:bin].should.nil?
   end
 
-  it "excluded bins are not used" do
+  it 'excluded bins are not used' do
     TestIds.configure do |config|
       config.bins.include << (1..4)
       config.bins.exclude << 3
@@ -76,41 +77,41 @@ describe "The bin allocator" do
     a(:t3)[:bin].should == 4
   end
 
-  it "the system can be saved to a file and resumed" do
+  it 'the system can be saved to a file and resumed' do
     TestIds.configure do |config|
       config.bins.include << (1..4)
     end
     a(:t1)[:bin].should == 1
     a(:t2, bin: 3)[:bin].should == 3
-    
-    #TestIds.allocator.save
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+
+    # TestIds.allocator.save
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.bins.include << (1..4)
-    #end
+    # end
     a(:t3)[:bin].should == 2
     a(:t4)[:bin].should == 4
   end
 
-  it "previously assigned manual bins are reclaimed next time" do
+  it 'previously assigned manual bins are reclaimed next time' do
     TestIds.configure do |config|
       config.bins.include << (1..4)
     end
     a(:t1)[:bin].should == 1
     a(:t2)[:bin].should == 2
     a(:t3, bin: 2)[:bin].should == 2
-    
-    #TestIds.allocator.save
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+
+    # TestIds.allocator.save
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.bins.include << (1..4)
-    #end
+    # end
     a(:t1)[:bin].should == 1
     a(:t2)[:bin].should == 3
     a(:t3, bin: 2)[:bin].should == 2
   end
 
-  it "when all bins are used they will be re-used oldest first" do
+  it 'when all bins are used they will be re-used oldest first' do
     TestIds.configure do |config|
       config.bins.include << (1..3)
     end
@@ -121,30 +122,30 @@ describe "The bin allocator" do
     a(:t4)[:bin].should == 1
     a(:t5)[:bin].should == 2
 
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.bins.include << (1..3)
-    #end
+    # end
     a(:t1)[:bin].should == 1
     a(:t2)[:bin].should == 2
     a(:t3)[:bin].should == 3
-    a(:t1)[:bin].should == 1  # More recent reference makes 2 the oldest
+    a(:t1)[:bin].should == 1 # More recent reference makes 2 the oldest
     a(:t6)[:bin].should == 2
 
-    #TestIds.allocator.save
-    #TestIds.send(:reset)
-    #TestIds.configure do |config|
+    # TestIds.allocator.save
+    # TestIds.send(:reset)
+    # TestIds.configure do |config|
     #  config.bins.include << (1..3)
-    #end
+    # end
     a(:t1)[:bin].should == 1
     a(:t2)[:bin].should == 2
     a(:t3)[:bin].should == 3
-    a(:t1)[:bin].should == 1  # More recent reference makes 2 the oldest
+    a(:t1)[:bin].should == 1 # More recent reference makes 2 the oldest
     a(:t7)[:bin].should == 2
     a(:t8)[:bin].should == 3
   end
 
-  it "tests can reserve multiple bins" do
+  it 'tests can reserve multiple bins' do
     TestIds.configure do |config|
       config.bins.include << (10..30)
       config.bins.size = 5
@@ -168,7 +169,7 @@ describe "The bin allocator" do
     t[:bin].should == 15
   end
 
-  #it "existing test IDs can be checked for compliance and re-assigned if non-compliant" do
+  # it "existing test IDs can be checked for compliance and re-assigned if non-compliant" do
   #  TestIds.configure do |config|
   #    config.bins.include << (1..3)
   #  end
@@ -199,5 +200,5 @@ describe "The bin allocator" do
   #  a(:t4)[:bin].should == 11
   #  a(:t4)[:bin].should == 11
   #  a(:t5)[:bin].should == 12
-  #end
+  # end
 end
