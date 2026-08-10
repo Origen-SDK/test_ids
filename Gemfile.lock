@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    test_ids (1.2.3)
+    test_ids (1.2.4)
       dentaku (~> 3)
       dry-inflector (= 0.2.0)
       git
@@ -257,4 +257,4 @@ DEPENDENCIES
   test_ids!
 
 BUNDLED WITH
-   2.4.22
+   2.6.3
