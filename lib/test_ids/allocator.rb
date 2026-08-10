@@ -43,7 +43,7 @@ module TestIds
         end
         if range.uniq.size != range.size
           Origen.log.error "Duplicate or overlapping range has been detected in configuration: \'#{TestIds.current_configuration.id}\'."
-          raise
+          fail
         end
       end
       range_item(range, range_definition, options)
@@ -72,8 +72,6 @@ module TestIds
         # and new value is assigned to the softbin.
         if previous_assigned_value == range[@pointer]
           @pointer += options[:size]
-        else
-          # Because of the pointer calculations above, I don't think it will ever reach here, has not in my test cases so far!
         end
         assigned_value = range[@pointer]
         # Now update the database pointers to point to the lastest assigned softbin for a given range.
@@ -87,7 +85,7 @@ module TestIds
       end
       unless !assigned_value.nil? && range.include?(assigned_value)
         Origen.log.error 'Assigned value not in range'
-        raise
+        fail
       end
       # Since the assigned value for this test has now changed, update store to contain the newly assigned value
       # so that when the json file is written, it contains the latest assigned value name.
@@ -133,7 +131,7 @@ module TestIds
           items << :number
           number_done = true
         else
-          raise "Couldn't work out whether to generate next on iteration #{i} of #{items_required}, already picked: #{items}"
+          fail "Couldn't work out whether to generate next on iteration #{i} of #{items_required}, already picked: #{items}"
         end
       end
       items
@@ -149,7 +147,7 @@ module TestIds
       nones = []
 
       # Record any :nones that are present for later
-      %i[bin softbin number].each do |type|
+      %i(bin softbin number).each do |type|
         nones << type if options[type] == :none
         config(type).allocator.instance_variable_set('@needs_regenerated', {})
       end
@@ -206,26 +204,26 @@ module TestIds
               t['number'][name] = { 'number' => numbers['number'], 'size' => 1 }
             end
             s = {
-              'format_revision' => 1,
-              'assigned' => t,
+              'format_revision'   => 1,
+              'assigned'          => t,
               'manually_assigned' => s['manually_assigned'],
-              'pointers' => s['pointers'],
-              'references' => s['references']
+              'pointers'          => s['pointers'],
+              'references'        => s['references']
             }
           end
           # Change the keys to plural versions, this makes it easier to search for in the file
           # since 'number' is used within individual records
           if s['format_revision'] == 1
             s = {
-              'format_revision' => 2,
-              'configuration' => nil,
-              'pointers' => { 'bins' => s['pointers']['bin'], 'softbins' => s['pointers']['softbin'],
+              'format_revision'   => 2,
+              'configuration'     => nil,
+              'pointers'          => { 'bins' => s['pointers']['bin'], 'softbins' => s['pointers']['softbin'],
                               'numbers' => s['pointers']['number'] },
-              'assigned' => { 'bins' => s['assigned']['bin'], 'softbins' => s['assigned']['softbin'],
+              'assigned'          => { 'bins' => s['assigned']['bin'], 'softbins' => s['assigned']['softbin'],
                               'numbers' => s['assigned']['number'] },
               'manually_assigned' => { 'bins' => s['manually_assigned']['bin'],
                                        'softbins' => s['manually_assigned']['softbin'], 'numbers' => s['manually_assigned']['number'] },
-              'references' => { 'bins' => s['references']['bin'], 'softbins' => s['references']['softbin'],
+              'references'        => { 'bins' => s['references']['bin'], 'softbins' => s['references']['softbin'],
                                 'numbers' => s['references']['number'] }
             }
           end
@@ -236,17 +234,19 @@ module TestIds
           s
         else
           {
-            'format_revision' => STORE_FORMAT_REVISION,
-            'configuration' => nil,
-            'pointers' => { 'bins' => nil, 'softbins' => nil, 'numbers' => nil },
-            'assigned' => { 'bins' => {}, 'softbins' => {}, 'numbers' => {} },
+            'format_revision'   => STORE_FORMAT_REVISION,
+            'configuration'     => nil,
+            'pointers'          => { 'bins' => nil, 'softbins' => nil, 'numbers' => nil },
+            'assigned'          => { 'bins' => {}, 'softbins' => {}, 'numbers' => {} },
             'manually_assigned' => { 'bins' => {}, 'softbins' => {}, 'numbers' => {} },
-            'references' => { 'bins' => {}, 'softbins' => {}, 'numbers' => {} }
+            'references'        => { 'bins' => {}, 'softbins' => {}, 'numbers' => {} }
           }
         end
       end
     end
 
+    # disable lint check combination loop as we prefer how the output looks like
+    # rubocop:disable Style/CombinableLoops
     def repair(_options = {})
       #####################################################################
       # Add any numbers that are missing from the references pool if the
@@ -307,6 +307,7 @@ module TestIds
         end
       end
     end
+    # rubocop:enable Style/CombinableLoops
 
     # Clear the :bins, :softbins and/or :numbers and/or :ranges by setting the options for each item
     def clear(options)
@@ -421,7 +422,7 @@ module TestIds
         val['number'] = nil
         val['size'] = nil
         # Also regenerate these as they could be a function of the number we just invalidated
-        (%i[bin softbin number] - [type]).each do |t|
+        (%i(bin softbin number) - [type]).each do |t|
           @needs_regenerated[t] = true if config.send("#{t}s").needs?(type)
         end
       end
@@ -499,16 +500,16 @@ module TestIds
       conf = config.send(type_plural)
       if conf.algorithm
         algo = conf.algorithm.to_s.downcase
-        raise "Illegal algorithm: #{algo}" unless algo.to_s =~ /^[bsn\dx]+$/
+        fail "Illegal algorithm: #{algo}" unless algo.to_s =~ /^[bsn\dx]+$/
 
         number = algo.to_s
-        (%i[bin softbin number] - [type]).each do |t|
+        (%i(bin softbin number) - [type]).each do |t|
           next unless number =~ /(#{t.to_s[0]}+)/
 
           max_size = Regexp.last_match(1).size
           num = options[t].to_s
           if num.size > max_size
-            raise "The allocated number, #{num}, overflows the #{t} field in the #{type} algorithm - #{algo}"
+            fail "The allocated number, #{num}, overflows the #{t} field in the #{type} algorithm - #{algo}"
           end
 
           number = number.sub(/#{t.to_s[0]}+/, num.rjust(max_size, '0'))
@@ -631,7 +632,7 @@ module TestIds
         elsif instance.respond_to?(:name)
           name = instance.name
         else
-          raise "Could not get the test name from #{instance}"
+          fail "Could not get the test name from #{instance}"
         end
       end
       name.to_s.downcase

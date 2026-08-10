@@ -143,12 +143,12 @@ module TestIds
           self.<<(i)
         elsif i.is_a?(String)
           # JSON does not serialize ranges well, take care of it here
-          raise "Unknown bin array object type (#{o.class}): #{o}" unless i =~ /^(\d+)\.\.(\d+)$/
+          fail "Unknown bin array object type (#{o.class}): #{o}" unless i =~ /^(\d+)\.\.(\d+)$/
 
           self.<<((Regexp.last_match(1).to_i)..(Regexp.last_match(2).to_i))
 
         else
-          raise "Unknown bin array object type (#{o.class}): #{o}"
+          fail "Unknown bin array object type (#{o.class}): #{o}"
         end
       end
     end

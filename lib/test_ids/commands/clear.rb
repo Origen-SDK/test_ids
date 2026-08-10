@@ -47,7 +47,7 @@ begin
   if a.nil?
     Origen.log.error "No configuration file could be found for file ID: '#{ARGV.first}'!"
     Origen.log.warn 'By default, the correct ID to pass in will need to match the filename in the form: store_<file id>.json'
-    raise
+    fail
   end
   a.clear(options)
   a.save

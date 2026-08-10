@@ -3,11 +3,11 @@
 require 'origen_testers/flow'
 module OrigenTesters
   module Flow
-    BIN_OPTS = %i[bin softbin bin_size softbin_size number number_size].freeze
+    BIN_OPTS = %i(bin softbin bin_size softbin_size number number_size).freeze
 
     # Override the flow.test method to inject our generated bin and
     # test numbers
-    alias _orig_test test
+    alias_method :_orig_test, :test
     def test(instance, options = {})
       if TestIds.configured? && options[:test_ids] != :notrack
         options[:test_ids_flow_id] = try(:top_level).try(:id) || id

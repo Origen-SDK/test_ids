@@ -106,7 +106,7 @@ module TestIds
       r = system(cmd)
       return if r
 
-      raise "Something went wrong running command: #{cmd}"
+      fail "Something went wrong running command: #{cmd}"
     end
 
     def publish
@@ -139,7 +139,7 @@ module TestIds
           sleep 5
         end
         data = {
-          'user' => User.current.name,
+          'user'    => User.current.name,
           'expires' => (Time.now + minutes(5)).to_f
         }
         write('lock.json', JSON.pretty_generate(data))
@@ -151,7 +151,7 @@ module TestIds
 
     def release_lock
       data = {
-        'user' => nil,
+        'user'    => nil,
         'expires' => nil
       }
       write('lock.json', JSON.pretty_generate(data))

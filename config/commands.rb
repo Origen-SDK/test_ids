@@ -33,9 +33,9 @@ when 'examples', 'test'
   status = 0
 
   # Program generator integration test
-  ARGV = %w[program/prb1.rb -t default -e default -r approved].freeze
+  ARGV = %w[program/prb1.rb -t default -e default -r approved]
   load "#{Origen.top}/lib/origen/commands/program.rb"
-  ARGV = %W[program/prb1.rb -t dut2 -o #{Origen.root}/output/dut2 -e default -r approved/dut2].freeze
+  ARGV = %W[program/prb1.rb -t dut2 -o #{Origen.root}/output/dut2 -e default -r approved/dut2]
   load "#{Origen.top}/lib/origen/commands/program.rb"
 
   if Origen.app.stats.changed_files.zero? &&

@@ -55,7 +55,7 @@ module TestIds
         softbin: opts[:softbin], softbin_size: opts[:softbin_size]
       }
     end
-    alias allocate_soft_bin allocate_softbin
+    alias_method :allocate_soft_bin, :allocate_softbin
 
     # Similar to allocate, but allocates a bin number only, i.e. no softbin or test number
     def allocate_bin(instance, options = {})
@@ -98,9 +98,9 @@ module TestIds
       return @configuration[id] if @configuration && @configuration[id]
       return unless fail_on_missing
 
-      raise('You have to create the configuration first before you can access it')
+      fail('You have to create the configuration first before you can access it')
     end
-    alias config configuration
+    alias_method :config, :configuration
 
     def configure(id = nil, options = {})
       if id.is_a?(Hash)
@@ -127,7 +127,7 @@ module TestIds
 
     # Switch the current configuration to the given ID
     def config=(id)
-      raise "The TestIds configuration '#{id}' has not been defined yet!" unless @configuration[id]
+      fail "The TestIds configuration '#{id}' has not been defined yet!" unless @configuration[id]
 
       @configuration_id = id
     end
@@ -200,9 +200,9 @@ module TestIds
     def repo=(val)
       return if @repo && @repo == val
       if @repo && @repo != val
-        raise 'You can only use a single test ids repository per program generation run, one per application is recommended'
+        fail 'You can only use a single test ids repository per program generation run, one per application is recommended'
       end
-      raise 'TestIds.repo must be set before creating the first configuration' if @configuration
+      fail 'TestIds.repo must be set before creating the first configuration' if @configuration
 
       @repo = val
     end
@@ -213,9 +213,9 @@ module TestIds
 
     def publish=(val)
       return if @publish && publish? == val
-      raise 'You can only use a single setting for publish per program generation run' if @publish && publish? != val
-      raise 'TestIds.publish must be set before creating the first configuration' if @configuration
-      raise 'TestIds.publish must be set to either true or false' unless [true, false].include?(val)
+      fail 'You can only use a single setting for publish per program generation run' if @publish && publish? != val
+      fail 'TestIds.publish must be set before creating the first configuration' if @configuration
+      fail 'TestIds.publish must be set to either true or false' unless [true, false].include?(val)
 
       @publish = val ? :save : :dont_save
     end
@@ -265,7 +265,7 @@ module TestIds
           sleep 5
         end
         data = {
-          'user' => User.current.name,
+          'user'    => User.current.name,
           'expires' => (Time.now + @git.minutes(5)).to_f
         }
         @git.write('lock.json', JSON.pretty_generate(data))
@@ -280,7 +280,7 @@ module TestIds
 
       Origen.profile 'Publishing the test IDs store' do
         data = {
-          'user' => nil,
+          'user'    => nil,
           'expires' => nil
         }
         @git.write('lock.json', JSON.pretty_generate(data))

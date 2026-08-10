@@ -35,7 +35,7 @@ module TestIds
       end
 
       def valid?(number)
-        raise 'valid? is not supported for algorithm or callback-based assignments' if function?
+        fail 'valid? is not supported for algorithm or callback-based assignments' if function?
 
         number = number.to_i
         include.include?(number) && !exclude.include?(number)
@@ -56,7 +56,7 @@ module TestIds
           @exclude.load_from_serialized(o['exclude'])
         elsif o == 'callback'
           callback do
-            raise 'The callback for this configuration is not available!'
+            fail 'The callback for this configuration is not available!'
           end
         else
           self.algorithm = o
@@ -72,7 +72,7 @@ module TestIds
           {
             'include' => include,
             'exclude' => exclude,
-            'size' => size
+            'size'    => size
           }.to_json(*a)
         end
       end
@@ -166,9 +166,9 @@ module TestIds
 
     def to_json(*a)
       {
-        'bins' => bins,
+        'bins'     => bins,
         'softbins' => softbins,
-        'numbers' => numbers
+        'numbers'  => numbers
       }.to_json(*a)
     end
 
